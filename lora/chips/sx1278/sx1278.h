@@ -1,4 +1,8 @@
 #include <pigpio.h>
+#include <chrono>
+#include <thread>
+#include <cmath>
+#include <utility>
 #include "LoRa_chip.h"
 
 #define REG_FIFO 0x00
@@ -120,34 +124,25 @@ typedef enum header_mode{
     EXPLICIT
 } header_mode;
 
-typedef struct{
-    char *buf;
-    unsigned char size;//Size of buffer. Used in Explicit header mode. 255 MAX size
-    struct timeval last_time;
-    double Tsym;
-    double Tpkt;
-    unsigned payloadSymbNb;
-    void *userPtr;//user pointer passing to user callback
-} txData;
-
-typedef struct{
-    char buf[256];
-    unsigned char size;
-    struct timeval last_time;
-    double SNR;
-    int RSSI;
-    bool CRC;
-    void *userPtr;//user pointer passing to user callback
-} rxData;
+struct pin_config {
+    uint32_t SPI_HW_CH;
+    uint32_t SPI_FREQUENCY;
+    uint32_t SPI_SS_PIN;
+    uint32_t RESET_PIN;
+    uint32_t DIO_0_PIN;
+    uint32_t DIO_1_PIN;
+    uint32_t DIO_2_PIN;
+    uint32_t DIO_3_PIN;
+};
 
 struct operation_config {
-    BandWidth bw = BW500;
+    BandWidth bw = BW125;
     SpreadingFactor sf = SF7; //only from SF7 to SF12. SF6 not support yet.
     ErrorCodingRate ecr = CR8;
     uint64_t freq = 433000000;// Frequency in Hz. Example 434000000
     unsigned int preambleLen = 6;
     bool lowDataRateOptimize = false;// Dont touch it sets automatically
-    OutputPower outPower = OP17;
+    OutputPower outPower = OP10;
     PowerAmplifireOutputPin powerOutPin = PA_BOOST;//This chips has to outputs for signal "High power" and regular.
     unsigned char syncWord = 0x12;
     LnaGain lnaGain = G1;
@@ -163,16 +158,17 @@ void test_static(int gpio, int level, uint32_t tick, void* userdata);
 
 class sx1278_module: public LoRa_chip {
     public:
-    sx1278_module(pin_config pin_cfg, operation_config op_cfg): SPI_HW_CH(pin_cfg.SPI_HW_CH), SPI_FREQUENCY(pin_cfg.SPI_FREQUENCY), SPI_SS_PIN(pin_cfg.SPI_SS_PIN), RESET_PIN(pin_cfg.RESET_PIN), DIO_0_PIN(pin_cfg.DIO_0_PIN), DIO_1_PIN(pin_cfg.DIO_1_PIN), DIO_2_PIN(pin_cfg.DIO_2_PIN), DIO_3_PIN(pin_cfg.DIO_3_PIN), op_config_(op_cfg) {
+    sx1278_module(pin_config pin_cfg, operation_config op_cfg, std::function<void (rx_data&)> callback): SPI_HW_CH(pin_cfg.SPI_HW_CH), SPI_FREQUENCY(pin_cfg.SPI_FREQUENCY), SPI_SS_PIN(pin_cfg.SPI_SS_PIN), RESET_PIN(pin_cfg.RESET_PIN), DIO_0_PIN(pin_cfg.DIO_0_PIN), DIO_1_PIN(pin_cfg.DIO_1_PIN), DIO_2_PIN(pin_cfg.DIO_2_PIN), DIO_3_PIN(pin_cfg.DIO_3_PIN), op_config_(op_cfg), callback(std::move(callback)) {
 
     };
 
     bool init() override;
     void end() override;
     void send(std::vector<uint8_t> &buffer) override;
+    //void set_receive_callback(std::function<void (rx_data&)> func) override;
     void receive() override;
     static void rxDoneISRf(int gpio, int level, uint32_t tick, void* userdata);
-    static void * rx_f(void *p);
+    static void * static_callback_wrapper(void *p);
 
 
     //private:
@@ -184,17 +180,18 @@ class sx1278_module: public LoRa_chip {
     const uint32_t DIO_1_PIN;
     const uint32_t DIO_2_PIN;
     const uint32_t DIO_3_PIN;
-    int32_t spi_handle_;
+    int32_t spi_handle_{};
     operation_config op_config_;
-    txData tx_data_;
-    rxData rx_data_;
-    pthread_t receiver_thread;
+    tx_data tx_data_{};
+    rx_data rx_data_{};
+    pthread_t receiver_thread{};
+    std::function<void (rx_data&)> callback;
 
     void reset();
     int write_byte_to_reg(uint8_t reg, uint8_t byte);
     int write_buffer_to_reg(uint8_t reg, uint8_t *buffer, size_t size);
     uint8_t read_byte_from_reg(uint8_t reg);
-    int read_buffer_from_reg(uint8_t reg, uint8_t *buffer, size_t size);
+    int read_buffer_from_reg(uint8_t reg, std::vector<uint8_t> &buffer, size_t size);
     void set_lora_mode();
     void set_sleep_mode();
     void set_tx_power(OutputPower level);

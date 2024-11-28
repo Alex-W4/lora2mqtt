@@ -1,0 +1,195 @@
+body {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+.light_hover:hover {
+    color: black;
+    background-color: #dbdbdb;
+}
+
+.navigation_bar {
+    top: 0;
+    left: 0;
+    background-color: #424242;
+    height: 60pt;
+    width: 100%;
+    margin: 0;
+    position: absolute;
+    display: flex;
+}
+
+.navigation_entry {
+    position: relative;
+    width: fit-content;
+    padding: 5pt 20pt;
+    font-size: 30pt;
+    place-content: center;
+    color: white;
+}
+
+.navigation_bar_img {
+    height: 100%;
+}
+
+#navigation_bar_settings {
+    margin-left: auto;
+    max-width: 50pt;
+}
+
+.display_box {
+    position: absolute;
+    background-color: #121212;
+    height: calc(100% - 60pt);
+    width: 100%;
+    bottom: 0;
+}
+
+.square_entry_list {
+    top: 0;
+    left: 0;
+    display: grid;
+    grid-gap: 0;
+    grid-template-columns: repeat(auto-fill, 200pt);
+    grid-template-rows: repeat(auto-fill, 200pt);
+    overflow-y: auto;
+}
+
+.device_entry {
+    display: inline-block;
+    width: 200pt;
+    position: relative;
+}
+
+.device_entry_dummy {
+    margin-top: 100%;
+}
+
+.device_entry_box {
+    position: absolute;
+    background-color: #4b4b4b;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 15pt;
+    border-radius: 10pt;
+    color: white;
+}
+
+.device_entry_img_box {
+    width: 100%;
+    height: 65%;
+    position: relative;
+    top: 0;
+}
+
+.device_entry_img_add_box {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: 0;
+}
+
+.device_entry_img {
+    position: relative;
+    width: 80%;
+    height: 90%;
+    top: 7%;
+    left: 10%;
+}
+
+.device_entry_img_add {
+    position: relative;
+    width: 60%;
+    top: 20%;
+    left: 20%;
+    aspect-ratio: 1/1;
+}
+
+.device_entry_text_box {
+    width: 100%;
+    height: 20%;
+    position: relative;
+    bottom: 0;
+    align-content: center;
+}
+
+.device_entry_text {
+    position: unset;
+    margin: 0 auto;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 20pt;
+}
+
+/*
+Device Details
+ */
+
+.device_details_entry {
+    display: inline-block;
+    width: 100%;
+    position: relative;
+}
+
+.device_details_box {
+    position: absolute;
+    background-color: #4b4b4b;
+    height: fit-content;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 15pt;
+    border-radius: 10pt;
+    color: white;
+    display: flex;
+}
+
+.device_details_img_box {
+    height: 100%;
+    width: 200pt;
+}
+
+.device_details_img {
+    position: relative;
+    width: 80%;
+    aspect-ratio: 1/1;
+    margin: 7%;
+    left: 0;
+}
+
+.device_details_info_box {
+    width: calc(100% - 200pt);
+    height: fit-content;
+    display: unset;
+}
+
+.device_details_info_entry {
+    font-size: 15pt;
+    position: relative;
+    width: 100%;
+    height: fit-content;
+}
+
+.new_device_button {
+    position: relative;
+    width: fit-content;
+    padding: 5pt 20pt;
+    font-size: 25pt;
+    place-content: center;
+    background-color: #121212;
+    color: white;
+    border-radius: 10pt;
+    margin: 20pt;
+}
+
+input {
+    width: 200pt;
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LoRa2MQTT</title>
+</head>
+<body>
+<div class="navigation_bar">
+    <div class="navigation_entry light_hover" id="navigation_bar_devices" onclick="to_devices()">
+        Geräte
+    </div>
+    <div class="navigation_entry light_hover" id="navigation_bar_mqtt" onclick="select_view('mqtt_details')">
+        MQTT
+    </div>
+    <div class="navigation_entry light_hover " id="navigation_bar_lora_module" onclick="select_view('lora_module_list')">
+        LoRa-Module
+    </div>
+    <div class="navigation_entry light_hover " id="navigation_bar_settings" onclick="select_view('settings')">
+        <img src="img/gear.svg" alt="Settings" class="navigation_bar_img">
+    </div>
+</div>
+<div class="display_box">
+    <div class="square_entry_list" id="device_list_box">
+        <!--<div class="device_entry">
+            <div class="device_entry_dummy"></div>
+            <div class="device_entry_box light_hover" id="1">
+
+                <div class="device_entry_img_box">
+                    <div class="device_entry_img">
+                        <img src="img/cistern.svg" class="device_entry_img">
+                    </div>
+                </div>
+                <div class="device_entry_text_box">
+                    <p class="device_entry_text">
+                        Zisterne Garten
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="device_entry">
+            <div class="device_entry_dummy"></div>
+            <div class="device_entry_box light_hover" id="2">
+
+                <div class="device_entry_img_box">
+                    <div class="device_entry_img">
+                        <img src="img/cistern.svg" class="device_entry_img">
+                    </div>
+                </div>
+                <div class="device_entry_text_box">
+                    <p class="device_entry_text">
+                        Zisterne Terrasse
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="device_entry">
+            <div class="device_entry_dummy"></div>
+            <div class="device_entry_box light_hover" id="3">
+
+                <div class="device_entry_img_add_box">
+                    <div class="device_entry_img_add">
+                        <img src="img/cross.svg" class="device_entry_img_add">
+                    </div>
+                </div>
+            </div>
+        </div>-->
+    </div>
+    <div class="square_entry_list" id="new_device_search_box"></div>
+    <div class="config_box" id="new_device_config_box"><div class="device_details_entry">
+        <!--<div class="device_details_box">
+            <div class="device_details_img_box">
+                <img src="img/cistern.svg" class="device_details_img" id="new_device_img">
+            </div>
+            <div class="device_details_info_box">
+                <div class="device_details_info_entry">
+                    <p>
+                        Gerät: Zisternensensor
+                    </p>
+                </div>
+                <div class="device_details_info_entry">
+                    <p>
+                        Version: 1
+                    </p>
+                </div>
+                <div class="device_details_info_entry">
+                    <p>
+                        MAC: 68:67:25:51:54:d8
+                    </p>
+                </div>
+                <div class="device_details_info_entry">
+                    <p>
+                        Name für MQTT Server: <input type="text" id="new_device_name_input">
+                    </p>
+
+                </div>
+            </div>
+        </div>-->
+    </div> </div>
+    <div class="details_box" id="device_details_box">
+        <!--<div class="device_details_entry">
+            <div class="device_details_box">
+                <div class="device_details_img_box">
+                    <img src="img/cistern.svg" class="device_details_img" id="details_img">
+                </div>
+                <div class="device_details_info_box">
+                    <div class="device_details_info_entry">
+                        <p>
+                            Gerät: Zisternensensor
+                        </p>
+                    </div>
+                    <div class="device_details_info_entry">
+                        <p>
+                            Version: 1
+                        </p>
+                    </div>
+                    <div class="device_details_info_entry">
+                        <p>
+                            MAC: 68:67:25:51:54:d8
+                        </p>
+                    </div>
+                    <div class="device_details_info_entry">
+                        <p>
+                            Name für MQTT Server: Zisterne Terrasse
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+
+    <div class="details_box" id="mqtt_details_box">
+        <!--<div class="device_details_entry">
+            <div class="device_details_box">
+                <div class="device_details_img_box">
+                    <img src="img/mqtt_logo.png" class="device_details_img">
+                </div>
+                <div class="device_details_info_box">
+                    <div class="device_details_info_entry">
+                        <p>
+                            Server: localhost
+                        </p>
+                    </div>
+                    <div class="device_details_info_entry">
+                        <p>
+                            Port: 80
+                        </p>
+                    </div>
+                    <div class="device_details_info_entry">
+                        <p>
+                            Username (leer für anonym):
+                        </p>
+                    </div>
+                    <div class="device_details_info_entry">
+                        <p>
+                            Passwort (ohne wenn leer):
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+    </div>
+    <div class="config_box" id="mqtt_config_box"></div>
+
+    <div class="square_entry_list" id="lora_module_list_box"></div>
+    <div class="details_box" id="lora_module_details_box"></div>
+    <div class="square_entry_list" id="lora_new_module_list_box"></div>
+    <div class="config_box" id="lora_new_module_config_box"></div>
+
+    <div class="details_box" id="settings_box"></div>
+    <div class="config_box" id="settings_config_box"></div>
+</div>
+
+</body>
+<link href="style.css" rel="stylesheet">
+<script src="main.js"> </script>
+</html>

@@ -1,7 +1,5 @@
-#include <cmath>
 #include "sx1278.h"
-#include <chrono>
-#include <thread>
+
 
 
 bool sx1278_module::init() {
@@ -16,7 +14,11 @@ bool sx1278_module::init() {
         std::cout << "'spiOpen' error code: " << spi_handle_ << std::endl;
         return false;
     }
-    //read_byte_from_reg(0x42);
+
+    if (read_byte_from_reg(0x42) != 0x12) {
+        std::cout << "Chip Version not matching!" << std::endl;
+        return false;
+    }
 
     set_lora_mode();
 
@@ -26,9 +28,9 @@ bool sx1278_module::init() {
         lora_set_payload(op_config_.payloadLen);
     }
 
-    //set_errorcr(op_config_.ecr);
-    //set_bandwidth(op_config_.bw);
-    //set_spreading_factor(op_config_.sf);
+    set_errorcr(op_config_.ecr);
+    set_bandwidth(op_config_.bw);
+    set_spreading_factor(op_config_.sf);
 
     if (op_config_.CRC) {
         enableCrc();
@@ -36,11 +38,12 @@ bool sx1278_module::init() {
         disableCrc();
     }
 
+
     set_tx_power(op_config_.outPower);
-    //set_sync_word(op_config_.syncWord);
-    //set_preamble(op_config_.preambleLen);
+    set_sync_word(op_config_.syncWord);
+    set_preamble(op_config_.preambleLen);
     set_agc(op_config_.AGC);
-    //set_lna(op_config_.lnaGain, op_config_.lnaBoost);
+    set_lna(op_config_.lnaGain, op_config_.lnaBoost);
 
     write_byte_to_reg(REG_FIFO_TX_BASE_ADDR, TX_BASE_ADDR);
     write_byte_to_reg(REG_FIFO_RX_BASE_ADDR, RX_BASE_ADDR);
@@ -120,22 +123,22 @@ uint8_t sx1278_module::read_byte_from_reg(uint8_t reg) {
 
     if(ret<=1)
         return -1;
-    //std::printf("Read reg 0x%02x: %02x\n",reg, static_cast<uint8_t>(rx[1]));
     return rx[1];
 }
 
-int sx1278_module::read_buffer_from_reg(uint8_t reg, uint8_t *buffer, size_t size){
+int sx1278_module::read_buffer_from_reg(uint8_t reg, std::vector<uint8_t> &buffer, size_t size){
     int ret;
     char tx[257];
     char rx[257];
 
     memset(tx, '\0', 257);
     memset(rx, '\0', 257);
-    memset(buffer, '\0', size);
+    buffer.clear();
     tx[0]=reg;
     ret = spiXfer(spi_handle_, tx, rx, size+1);
-    memcpy(buffer, &rx[1], ret-1);
-    //std::cout << "Read bytes: " << buffer << std::endl;
+    for (size_t i = 1; i < ret; ++i) {
+        buffer.emplace_back(rx[i]);
+    }
     return ret;
 }
 
@@ -249,7 +252,7 @@ void sx1278_module::set_ocp(uint8_t ocp) {
 }
 
 void sx1278_module::set_frequency(uint64_t frequency) {
-    uint64_t frf, frf_revers=0;
+    uint64_t frf;
     frf = (frequency << 19) / 32000000;
     write_byte_to_reg(REG_FR_MSB, static_cast<uint8_t>(frf >> 16));
     write_byte_to_reg(REG_FR_MID, static_cast<uint8_t>(frf >> 8));
@@ -260,7 +263,7 @@ void sx1278_module::calculate_packet_t() {
     unsigned BW_VAL[10] = {7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000, 500000};
 
     double Tsym, Tpreamle, Tpayload, Tpacket;
-    unsigned payloadSymbNb;
+    unsigned payload_symb_nb;
     int tmpPoly;
 
     unsigned bw = BW_VAL[(op_config_.bw>>4)];
@@ -282,13 +285,13 @@ void sx1278_module::calculate_packet_t() {
     if(tmpPoly<0){
         tmpPoly=0;
     }
-    payloadSymbNb = 8+ceil(((double)tmpPoly)/(4*(sf - 2*op_config_.lowDataRateOptimize)))*ecr;
-    Tpayload = payloadSymbNb*Tsym;
+    payload_symb_nb = 8 + ceil(((double)tmpPoly) / (4 * (sf - 2 * op_config_.lowDataRateOptimize))) * ecr;
+    Tpayload = payload_symb_nb * Tsym;
     Tpacket = Tpayload+Tpreamle;
 
     tx_data_.Tsym = Tsym;
     tx_data_.Tpkt = Tpacket;
-    tx_data_.payloadSymbNb = payloadSymbNb;
+    tx_data_.payload_symb_nb = payload_symb_nb;
 }
 
 void sx1278_module::set_low_datarate_optimize_on() {
@@ -312,15 +315,12 @@ void sx1278_module::set_dio_rx_mapping() {
 }
 
 void sx1278_module::set_rx_done_dioISR() {
-    printf("DIO_0_PIN: %i\n", DIO_0_PIN);
     gpioSetMode(DIO_0_PIN, PI_INPUT);
-    printf("gpioSetISRFuncEx: %i\n", gpioSetAlertFuncEx(DIO_0_PIN, rxDoneISRf, this));
-    //gpioSetISRFuncEx(DIO_0_PIN, RISING_EDGE, 0, reinterpret_cast<gpioISRFuncEx_t>(std::printf("Test callback! 0\n")), this);
+    gpioSetAlertFuncEx(DIO_0_PIN, rxDoneISRf, this);
 }
 
 void sx1278_module::rxDoneISRf(int gpio, int level, uint32_t tick, void* userdata){
-    //sx1278_module *handle = new sx1278_module(pin_config{1, 433000000, 7, 22, 23, 24, 25, 0}, operation_config{});
-    sx1278_module *handle = static_cast<sx1278_module *>(userdata);
+    auto *handle = static_cast<sx1278_module *>(userdata);
     unsigned char rx_nb_bytes;
 
     if(handle->read_byte_from_reg(REG_IRQ_FLAGS) & IRQ_RXDONE){
@@ -329,12 +329,12 @@ void sx1278_module::rxDoneISRf(int gpio, int level, uint32_t tick, void* userdat
         gettimeofday(&handle->rx_data_.last_time, nullptr);
 
         if(handle->op_config_.header == IMPLICIT){
-            handle->read_buffer_from_reg(REG_FIFO, reinterpret_cast<uint8_t *>(handle->rx_data_.buf), handle->op_config_.payloadLen);
+            handle->read_buffer_from_reg(REG_FIFO, handle->rx_data_.buf, handle->op_config_.payloadLen);
             handle->rx_data_.size = handle->op_config_.payloadLen;
         }
         else{
             rx_nb_bytes = handle->read_byte_from_reg(REG_RX_NB_BYTES);
-            handle->read_buffer_from_reg(REG_FIFO, reinterpret_cast<uint8_t *>(handle->rx_data_.buf), rx_nb_bytes);
+            handle->read_buffer_from_reg(REG_FIFO, handle->rx_data_.buf, rx_nb_bytes);
             handle->rx_data_.size = rx_nb_bytes;
         }
         handle->rx_data_.CRC = (handle->read_byte_from_reg(REG_IRQ_FLAGS) & 0x20);
@@ -343,14 +343,7 @@ void sx1278_module::rxDoneISRf(int gpio, int level, uint32_t tick, void* userdat
         handle->reset_irq_flags();
 
         if (handle->rx_data_.size > 0) {
-            rxData *temp = (rxData *)malloc(sizeof(rx_data_));
-
-            if (!temp)
-                return;
-
-            memcpy(temp, &handle->rx_data_, sizeof(rx_data_));
-            //rx_f(temp);
-            pthread_create(&handle->receiver_thread, nullptr, rx_f, temp);
+            pthread_create(&handle->receiver_thread, nullptr, static_callback_wrapper, handle);
             pthread_detach(handle->receiver_thread);
         }
     }
@@ -372,19 +365,25 @@ void sx1278_module::reset_irq_flags() {
     write_byte_to_reg(REG_IRQ_FLAGS, 0xff);
 }
 
-void * sx1278_module::rx_f(void *p){
-    rxData *rx = (rxData *)p;
-    printf("rx done \n");
-    printf("CRC error: %d\n", rx->CRC);
-    printf("string: %s\n", rx->buf);//Data we'v received
-    printf("RSSI: %d\n", rx->RSSI);
-    printf("SNR: %f\n", rx->SNR);
-    free(p);
-    return NULL;
+void * sx1278_module::static_callback_wrapper(void *p){
+    auto *handle = static_cast<sx1278_module *>(p);
+    auto *rx = &handle->rx_data_;
+
+    //printf("rx done \n");
+    //printf("CRC error: %d\n", rx->CRC);
+    //printf("string size: %zu\n", rx->buf.size());
+    //printf("string: %s\n", std::string(rx->buf.begin(), rx->buf.end()).c_str());
+    //printf("RSSI: %d\n", rx->RSSI);
+    //printf("SNR: %f\n", rx->SNR);
+    //WaElZhg%S&
+    if (!rx->CRC) {
+        handle->callback(*rx);
+    }
+    return nullptr;
 }
 
-void test_static(int gpio, int level, uint32_t tick, void* userdata) {
-    printf("test 0\n");
-}
-
+/*
+void sx1278_module::set_receive_callback(std::function<void(rx_data &)> func) {
+    callback_func_ = func;
+}*/
 

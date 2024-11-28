@@ -2,17 +2,12 @@
 #include <iostream>
 #include <csignal>
 #include <cstring>
+#include <vector>
+#include <functional>
+//#include <node_api.h>
+#include "msg.h"
 
-struct pin_config {
-    uint32_t SPI_HW_CH;
-    uint32_t SPI_FREQUENCY;
-    uint32_t SPI_SS_PIN;
-    uint32_t RESET_PIN;
-    uint32_t DIO_0_PIN;
-    uint32_t DIO_1_PIN;
-    uint32_t DIO_2_PIN;
-    uint32_t DIO_3_PIN;
-};
+
 
 #pragma once
 class LoRa_chip {
@@ -20,6 +15,7 @@ class LoRa_chip {
     virtual bool init() = 0;
     virtual void end() = 0;
     virtual void send(std::vector<uint8_t> &buffer) = 0;
+    //virtual void set_receive_callback(std::function<void (rx_data&)> func) = 0;
     virtual void receive() = 0;
 
     /*
@@ -38,3 +34,4 @@ class LoRa_chip {
 
     virtual void setGain(uint8_t gain) = 0;*/
 };
+
