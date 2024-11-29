@@ -82,6 +82,7 @@ wss.on('connection', function (ws) {
                             let device_obj = msg_obj.payload;
                             if (Object.hasOwn(device_obj, "mac")) {
                                 lora2mqtt.remove_from_device_list(device_obj.mac);
+                                save_config();
                                 update_registered_devices();
                             }
                             break
@@ -218,7 +219,8 @@ function set_new_device(mac, name, type, version) {
         //console.log("discovered_devices[0].mac" + discovered_devices[0].mac + " length: " + discovered_devices[0].mac.length);
     }
     lora2mqtt.remove_from_discovery_list(mac);
-    discovered_devices.splice(discovered_devices.findIndex(obj => obj.mac === mac), 1)
+    discovered_devices.splice(discovered_devices.findIndex(obj => obj.mac === mac), 1);
+    save_config();
     update_registered_devices();
 }
 
