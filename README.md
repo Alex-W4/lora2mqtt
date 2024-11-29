@@ -10,19 +10,20 @@ to prevent damage to the module or the pi.
 
 ![LoRa module position image](img/pi_position.png)
 
-This Software has dependencies which can be installed by the following command:
-
-```bash
-sudo apt install pigpio nodejs mosquitto libpaho-mqttpp-dev libpaho-mqtt-dev npm -y
-sudo -i npm install forever -g
-```
-
 To download and install this software you can clone this repo into a directory of your choice and run install.sh:
 
 ```bash
 git clone https://github.com/Alex-W4/lora2mqtt.git
 cd lora2mqtt
 sudo bash install.sh
+```
+
+All necessary dependencies should install automatically. For manual installation of the required dependencies use the following
+commands:
+
+```bash
+sudo apt install pigpio nodejs mosquitto libpaho-mqttpp-dev libpaho-mqtt-dev npm -y
+sudo -i npm install forever -g
 ```
 
 Reboot the pi to complete the installation.
