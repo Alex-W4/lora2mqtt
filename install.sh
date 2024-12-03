@@ -10,7 +10,7 @@ set -e
 /bin/npm install ./web
 
 /bin/npm install cmake-js -g
-/usr/local/lib/cmake-js build -d lora
+/usr/local/lib/node_modules/cmake-js/bin/cmake-js build -d lora
 
 PATH_=$(pwd)"/web"
 /bin/cp lora2mqtt lora2mqtt.temp
