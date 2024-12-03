@@ -53,6 +53,8 @@ function websocket_connect(ws_host) {
     ws.onopen = function (event) {
         console.log("WS open!");
         websocket_ready = true;
+        request_devices();
+        request_discovered_devices()
     };
 
     ws.onmessage = function (message) {

@@ -45,6 +45,7 @@ try {
 } catch (err) {
     console.error(err);
 }
+set_config()
 
 const server = http.createServer(app);
 const WebSocket = require('ws').WebSocketServer;
@@ -239,6 +240,12 @@ function send_discoverys() {
 function reset_discoverys() {
     lora2mqtt.reset_discovery_list();
     update_discovered_devices();
+}
+
+function set_config() {
+    for (let element in config.devices) {
+        set_new_device(config.devices[element].mac, config.devices[element].name, config.devices[element].type, config.devices[element].version);
+    }
 }
 
 function set_mqtt_config(host, port, username, password) {
