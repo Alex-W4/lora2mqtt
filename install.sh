@@ -5,9 +5,12 @@ if [ "$EUID" -ne 0 ]
 fi
 set -e
 /bin/apt update
-/bin/apt install pigpio nodejs mosquitto libpaho-mqttpp-dev libpaho-mqtt-dev npm -y
+/bin/apt install pigpio nodejs mosquitto libpaho-mqttpp-dev libpaho-mqtt-dev npm cmake -y
 /bin/npm install forever -g
 /bin/npm install ./web
+
+/bin/npm install cmake-js -g
+/usr/local/lib/cmake-js build -d lora
 
 PATH_=$(pwd)"/web"
 /bin/cp lora2mqtt lora2mqtt.temp
