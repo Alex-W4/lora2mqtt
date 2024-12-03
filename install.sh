@@ -20,5 +20,9 @@ PATH_=$(pwd)"/web"
 /bin/systemctl daemon-reload
 /usr/sbin/update-rc.d lora2mqtt defaults
 
+/bin/touch /etc/mosquitto/conf.d/lora2mqtt
+echo "allow_anonymous true" >> /etc/mosquitto/conf.d/lora2mqtt
+echo "listener 1883" >> /etc/mosquitto/conf.d/lora2mqtt
+
 echo ""
 echo "Install complete! Please reboot the system."
