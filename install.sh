@@ -7,6 +7,7 @@ set -e
 /bin/apt update
 /bin/apt install pigpio nodejs mosquitto libpaho-mqttpp-dev libpaho-mqtt-dev npm -y
 /bin/npm install forever -g
+/bin/npm install ./web
 
 PATH_=$(pwd)"/web"
 /bin/cp lora2mqtt lora2mqtt.temp

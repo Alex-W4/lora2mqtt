@@ -31,6 +31,11 @@ Reboot the pi to complete the installation.
 ## Usage
 A Webserver is hosted under the ip of the raspberry pi and port `80` by default. The port can be changed in `/etc/lora2mqtt/config.json`.
 
+## Manual Build
+The node addon can be build manually with `cmake-js`. After installation of cmake-js the addon can be manually compiled in the lora directory with:
+```bash
+cmake-js build
+```
 
 ## TODO
 There are still some features missing and planed in future updates like:

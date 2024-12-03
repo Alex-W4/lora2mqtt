@@ -404,6 +404,8 @@ napi_value mqtt_is_connected(napi_env env, napi_callback_info info) {
 }
 
 napi_value Init(napi_env env, napi_value exports) {
+
+    /*
     napi_property_descriptor properties[] = {
             { "set_device", nullptr, set_device, nullptr, nullptr, nullptr, napi_default, nullptr },
             { "set_mac_lookup", nullptr, set_mac_lookup, nullptr, nullptr, nullptr, napi_default, nullptr },
@@ -416,10 +418,46 @@ napi_value Init(napi_env env, napi_value exports) {
             { "remove_from_device_list", nullptr, remove_from_device_list, nullptr, nullptr, nullptr, napi_default, nullptr }
     };
 
-    napi_status status = napi_define_properties(env, exports, 9, properties);
+        status = napi_set_named_property(env, object, "foo", string);
+        if (status != napi_ok) {
+            napi_throw_error(env, nullptr, "Set property failed!");
+            return nullptr;
+        }
+
+
+    napi_valuestatus = napi_define_properties(env, exports, 9, properties);
     if (status != napi_ok) {
         napi_throw_error(env, nullptr, "Failed to define properties");
-    }
+    }*/
+    napi_value set_device_v, set_mac_lookup_v, get_discovered_macs_v, get_registered_devices_v, reset_discovery_list_v, set_mqtt_settings_v, mqtt_is_connected_v, remove_from_discovery_list_v, remove_from_device_list_v;
+
+    napi_create_function(env, nullptr, 0, set_device, nullptr, &set_device_v);
+    napi_set_named_property(env, exports, "set_device", set_device_v);
+
+    napi_create_function(env, nullptr, 0, set_mac_lookup, nullptr, &set_mac_lookup_v);
+    napi_set_named_property(env, exports, "set_mac_lookup", set_mac_lookup_v);
+
+    napi_create_function(env, nullptr, 0, get_discovered_macs, nullptr, &get_discovered_macs_v);
+    napi_set_named_property(env, exports, "get_discovered_macs", get_discovered_macs_v);
+
+    napi_create_function(env, nullptr, 0, get_registered_devices, nullptr, &get_registered_devices_v);
+    napi_set_named_property(env, exports, "get_registered_devices", get_registered_devices_v);
+
+    napi_create_function(env, nullptr, 0, reset_discovery_list, nullptr, &reset_discovery_list_v);
+    napi_set_named_property(env, exports, "reset_discovery_list", reset_discovery_list_v);
+
+    napi_create_function(env, nullptr, 0, set_mqtt_settings, nullptr, &set_mqtt_settings_v);
+    napi_set_named_property(env, exports, "set_mqtt_settings", set_mqtt_settings_v);
+
+    napi_create_function(env, nullptr, 0, mqtt_is_connected, nullptr, &mqtt_is_connected_v);
+    napi_set_named_property(env, exports, "mqtt_is_connected", mqtt_is_connected_v);
+
+    napi_create_function(env, nullptr, 0, remove_from_discovery_list, nullptr, &remove_from_discovery_list_v);
+    napi_set_named_property(env, exports, "remove_from_discovery_list", remove_from_discovery_list_v);
+
+    napi_create_function(env, nullptr, 0, remove_from_device_list, nullptr, &remove_from_device_list_v);
+    napi_set_named_property(env, exports, "remove_from_device_list", remove_from_device_list_v);
+
     return exports;
 }
 
