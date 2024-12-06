@@ -26,3 +26,4 @@ echo "listener 1883" >> /etc/mosquitto/conf.d/lora2mqtt.conf
 
 echo ""
 echo "Install complete! Please reboot the system."
+/bin/rm /etc/lora2mqtt/config.json
