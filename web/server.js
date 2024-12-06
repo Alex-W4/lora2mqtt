@@ -83,8 +83,8 @@ wss.on('connection', function (ws) {
                             let device_obj = msg_obj.payload;
                             if (Object.hasOwn(device_obj, "mac")) {
                                 lora2mqtt.remove_from_device_list(device_obj.mac);
-                                save_config();
                                 update_registered_devices();
+                                save_config();
                             }
                             break
                         case MESSAGE_TYPE.DISCOVERY_LIST:
