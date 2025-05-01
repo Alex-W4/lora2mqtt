@@ -107,7 +107,7 @@ napi_value set_mac_lookup(napi_env env, napi_callback_info info) {
 
     string_to_mac(mac_char_buf, new_entry.mac);
     new_entry.name = name_char_buf;
-    new_entry.type = type_char_buf[1];
+    new_entry.type = type_char_buf[0];
     new_entry.version = version;
     if (std::find_if(mac_resolution_list.begin(), mac_resolution_list.end(),[&new_entry](const mac_lookup& entry) {return entry.mac == new_entry.mac;}) != mac_resolution_list.end()) {
         auto erase_element = std::remove_if(mac_resolution_list.begin(), mac_resolution_list.end(),[&new_entry](const mac_lookup& entry) {return entry.mac == new_entry.mac;});
@@ -207,7 +207,7 @@ napi_value get_registered_devices(napi_env env, napi_callback_info info) {
         if (status != napi_ok) return nullptr;
         status = napi_set_named_property(env, disc_obj, "name", name);
         if (status != napi_ok) return nullptr;
-        status = napi_set_named_property(env, disc_obj, "device", dev);
+        status = napi_set_named_property(env, disc_obj, "type", dev);
         if (status != napi_ok) return nullptr;
         status = napi_set_named_property(env, disc_obj, "version", version);
         if (status != napi_ok) return nullptr;

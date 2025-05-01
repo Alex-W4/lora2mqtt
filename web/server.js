@@ -76,6 +76,7 @@ wss.on('connection', function (ws) {
                             let data = msg_obj.payload;
                             //console.log(data);
                             if (Object.hasOwn(data,"mac") && Object.hasOwn(data,"name") && Object.hasOwn(data,"type") && Object.hasOwn(data,"version")) {
+                                config.devices.push({mac: data.mac, name: data.name, type: data.type, version: data.version});
                                 set_new_device(data.mac, data.name, data.type, data.version);
                             }
                             break
@@ -188,7 +189,8 @@ function update_discovered_devices() {
 
 function update_registered_devices() {
     let macs = lora2mqtt.get_registered_devices();
-    config.devices = Array.from(macs.macs);
+    add_devices_to_config(Array.from(macs.macs))
+    //config.devices = Array.from(macs.macs);
     send_devices();
     //console.log(config.devices);
     //lora2mqtt.reset_discovery_list();
@@ -213,7 +215,7 @@ function update_mqtt_status() {
 
 function set_new_device(mac, name, type, version) {
     lora2mqtt.set_mac_lookup(mac, name, type, version);
-    config.devices.push({mac: mac, name: name, type: type, version: version});
+    //config.devices.push({mac: mac, name: name, type: type, version: version});
     //console.log("index: " + discovered_devices.findIndex(obj => obj.mac === mac));
     //console.log("mac: " + mac + " length: " + mac.length);
     if (discovered_devices.length > 0) {
@@ -221,8 +223,8 @@ function set_new_device(mac, name, type, version) {
     }
     lora2mqtt.remove_from_discovery_list(mac);
     discovered_devices.splice(discovered_devices.findIndex(obj => obj.mac === mac), 1);
-    save_config();
     update_registered_devices();
+    save_config();
 }
 
 function send_devices() {
@@ -244,13 +246,46 @@ function reset_discoverys() {
 
 function set_config() {
     for (let element in config.devices) {
-        set_new_device(config.devices[element].mac, config.devices[element].name, config.devices[element].type, config.devices[element].version);
+        console.log("set_conf: " + JSON.stringify(config) + "\n");
+        lora2mqtt.set_mac_lookup(config.devices[element].mac, config.devices[element].name, config.devices[element].type, config.devices[element].version);
+        lora2mqtt.remove_from_discovery_list(config.devices[element].mac);
+        discovered_devices.splice(discovered_devices.findIndex(obj => obj.mac === mac), 1);
+        //set_new_device(config.devices[element].mac, config.devices[element].name, config.devices[element].type, config.devices[element].version);
     }
+    update_registered_devices();
+    save_config();
 }
 
 function set_mqtt_config(host, port, username, password) {
     //console.log("" + host, "" + port, "" + username, "" + password)
     return lora2mqtt.set_mqtt_settings("" + host, "" + port, "" + username, "" + password);
+}
+
+function add_devices_to_config(raw_array) {
+    let sanitized_array = [];
+    for (let entry in raw_array) {
+        // default options
+        let sanitized_entry = {
+            mac: "00:00:00:00:00:00",
+            name: "Name Error!",
+            type: DEVICE_TYPE.CISTERN,
+            version: 0
+        };
+        if (Object.hasOwn(raw_array[entry], "mac") && typeof raw_array[entry].mac == "string" && raw_array[entry].mac.length <= 20) {
+            sanitized_entry.mac = raw_array[entry].mac;
+        }
+        if (Object.hasOwn(raw_array[entry], "name") && typeof raw_array[entry].name == "string" && raw_array[entry].name.length >= 1) {
+            sanitized_entry.name = raw_array[entry].name;
+        }
+        if (Object.hasOwn(raw_array[entry], "type") && typeof raw_array[entry].type == "string" && raw_array[entry].type.length === 1) {
+            sanitized_entry.type = raw_array[entry].type;
+        }
+        if (Object.hasOwn(raw_array[entry], "version") && typeof raw_array[entry].version == "number" && raw_array[entry].version >= 0) {
+            sanitized_entry.version = parseInt(raw_array[entry].version);
+        }
+        sanitized_array.push(sanitized_entry);
+    }
+    config.devices = sanitized_array;
 }
 
 function create_default_conf() {
