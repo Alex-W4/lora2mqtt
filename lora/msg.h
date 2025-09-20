@@ -5,6 +5,7 @@
 
 
 #define ZISTERNENSENSOR static_cast<uint8_t>('Z')
+#define WETTERSTATION static_cast<uint8_t>('W')
 #define FENSTERSENSOR static_cast<uint8_t>('F')
 
 
@@ -47,6 +48,11 @@ enum payload_type {
     mac = 0,
     battery_voltage = 1,
     distance = 2,
+    temperature = 3,
+    humidity = 4,
+    pressure = 5,
+    light = 6,
+    co2_concentration = 7,
 };
 
 struct {
@@ -62,12 +68,44 @@ struct {
 } battery_voltage_handle;
 
 struct {
-    uint8_t length = sizeof(int);
+    uint8_t length = sizeof(int32_t);
 } distance_handle;
+
+struct {
+    uint8_t length = sizeof(float);
+} temperature_handle;
+
+struct {
+    uint8_t length = sizeof(float);
+} humidity_handle;
+
+struct {
+    uint8_t length = sizeof(float);
+} pressure_handle;
+
+struct {
+    uint8_t length = sizeof(float);
+} light_handle;
+
+struct {
+    uint8_t length = sizeof(uint16_t);
+} co2_concentration_handle;
 
 struct cistern_data{
     int32_t distance{-1};
-    float battery_voltage{0};
+    float battery_voltage{-1};
+    std::array<uint8_t, MAC_LENGTH> mac{0};
+    uint8_t version{0};
+    int rssi{0};
+};
+
+struct weather_station_data{
+    float temperature{-100};
+    float humidity{-1};
+    float pressure{-1};
+    float light{-1};
+    uint16_t co2_concentration{0};
+    float battery_voltage{-1};
     std::array<uint8_t, MAC_LENGTH> mac{0};
     uint8_t version{0};
     int rssi{0};

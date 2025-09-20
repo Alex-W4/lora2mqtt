@@ -26,12 +26,17 @@ let MESSAGE_TYPE = {
 }
 
 DEVICE_TYPE = {
-    CISTERN: "Z"
+    CISTERN: "Z",
+    WEATHER_STATION: "W"
 }
 
 CISTERN_VERSION = {
     0: "1.0",
     1: "1.1"
+}
+
+WEATHER_STATION_VERSION = {
+    0: "1.0"
 }
 
 let websocket_ready = false;
@@ -320,9 +325,14 @@ function generate_device_entry(device_lookup) {
     dummy.classList.add("device_entry_dummy")
 
     let image = document.createElement("img");
-    // switch statement
-    image.src = "img/cistern.svg";
-    // switch statement end
+    switch (device_lookup.type) {
+        case "Z":
+            image.src = "img/cistern.svg";
+            break
+        case "W":
+            image.src = "img/weather_station.svg";
+            break
+    }
     image.classList.add("device_entry_img");
     let image_entry = document.createElement("div");
     image_entry.classList.add("device_entry_img");
@@ -387,9 +397,14 @@ function generate_discovered_device_entry(discovery_lookup) {
     dummy.classList.add("device_entry_dummy")
 
     let image = document.createElement("img");
-    // switch statement
-    image.src = "img/cistern.svg";
-    // switch statement end
+    switch (discovery_lookup.device) {
+        case "Z":
+            image.src = "img/cistern.svg";
+            break
+        case "W":
+            image.src = "img/weather_station.svg";
+            break
+    }
     image.classList.add("device_entry_img");
     let image_entry = document.createElement("div");
     image_entry.classList.add("device_entry_img");
@@ -424,9 +439,14 @@ function generate_details_entry(device_lookup) {
 
     let img = document.createElement("img");
     img.classList.add("device_details_img");
-    // switch statement
-    img.src = "img/cistern.svg";
-    // switch statement end
+    switch (device_lookup.type) {
+        case "Z":
+            img.src = "img/cistern.svg";
+            break
+        case "W":
+            img.src = "img/weather_station.svg";
+            break
+    }
     img.id = "details_img";
     let img_box = document.createElement("div");
     img_box.classList.add("device_details_img_box");
@@ -439,14 +459,29 @@ function generate_details_entry(device_lookup) {
     let details_info_device = document.createElement("div");
     details_info_device.classList.add("device_details_info_entry");
     let details_info_device_p = document.createElement("p");
-    details_info_device_p.innerText = "Gerät: " + "Zisternensensor";
+    switch (device_lookup.type) {
+        case "Z":
+            details_info_device_p.innerText = "Gerät: " + "Zisternensensor";
+            break
+        case "W":
+            details_info_device_p.innerText = "Gerät: " + "Wetterstation";
+            break
+    }
+
     details_info_device.appendChild(details_info_device_p);
     details_info_box.appendChild(details_info_device);
 
     let details_info_version = document.createElement("div");
     details_info_version.classList.add("device_details_info_entry");
     let details_info_version_p = document.createElement("p");
-    details_info_version_p.innerText = "Version: " + CISTERN_VERSION[device_lookup.version];
+    switch (device_lookup.type) {
+        case "Z":
+            details_info_version_p.innerText = "Version: " + CISTERN_VERSION[device_lookup.version];
+            break
+        case "W":
+            details_info_version_p.innerText = "Version: " + WEATHER_STATION_VERSION[device_lookup.version];
+            break
+    }
     details_info_version.appendChild(details_info_version_p);
     details_info_box.appendChild(details_info_version);
 
@@ -494,9 +529,14 @@ function generate_new_device_entry(discovery_lookup) {
 
     let img = document.createElement("img");
     img.classList.add("device_details_img");
-    // switch statement
-    img.src = "img/cistern.svg";
-    // switch statement end
+    switch (discovery_lookup.device) {
+        case "Z":
+            img.src = "img/cistern.svg";
+            break
+        case "W":
+            img.src = "img/weather_station.svg";
+            break
+    }
     img.id = "new_device_img";
     let img_box = document.createElement("div");
     img_box.classList.add("device_details_img_box");
@@ -509,13 +549,28 @@ function generate_new_device_entry(discovery_lookup) {
     let details_info_device = document.createElement("div");
     details_info_device.classList.add("device_details_info_entry");
     let details_info_device_p = document.createElement("p");
-    details_info_device_p.innerText = "Gerät: " + "Zisternensensor";
+    switch (discovery_lookup.device) {
+        case "Z":
+            details_info_device_p.innerText = "Gerät: " + "Zisternensensor";
+            break
+        case "W":
+            details_info_device_p.innerText = "Gerät: " + "Wetterstation";
+            break
+    }
     details_info_device.appendChild(details_info_device_p);
     details_info_box.appendChild(details_info_device);
 
     let details_info_version = document.createElement("div");
     details_info_version.classList.add("device_details_info_entry");
     let details_info_version_p = document.createElement("p");
+    switch (discovery_lookup.device) {
+        case "Z":
+            details_info_version_p.innerText = "Version: " + CISTERN_VERSION[discovery_lookup.version];
+            break
+        case "W":
+            details_info_version_p.innerText = "Version: " + WEATHER_STATION_VERSION[discovery_lookup.version];
+            break
+    }
     details_info_version_p.innerText = "Version: " + CISTERN_VERSION[discovery_lookup.version];
     details_info_version.appendChild(details_info_version_p);
     details_info_box.appendChild(details_info_version);

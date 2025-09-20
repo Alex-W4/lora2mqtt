@@ -479,14 +479,16 @@ void message_parser(rx_data& packet) {
     uint8_t device_byte = PACKET_KEY_STR.length();
     uint8_t device_version = PACKET_KEY_STR.length() + 1;
 
-    //std::cout << "device_byte: " << packet.buf[device_byte] << ", " << static_cast<uint32_t>(device_byte) << ", device_version: " << packet.buf[device_version] << ", " << static_cast<uint32_t>(device_version) << std::endl;
-
+    std::cout << "device_byte: " << packet.buf[device_byte] << ", " << static_cast<uint32_t>(device_byte) << ", device_version: " << packet.buf[device_version] << ", " << static_cast<uint32_t>(device_version) << std::endl;
+    //printf("data raw: %s\n", std::string(packet.buf.begin(), packet.buf.end()).c_str());
     if (!std::equal(packet.buf.begin(), packet.buf.begin() + static_cast<uint32_t>(PACKET_KEY_STR.length()), PACKET_KEY.begin(), PACKET_KEY.begin() + static_cast<uint32_t>(PACKET_KEY_STR.length()))) {
         //printf("Unknown sender!\n");
         return;
     }
     cistern_data rx_cist;
+    weather_station_data rx_weather;
     std::vector<uint8_t> temp_vec(packet.buf.begin() + device_version + 1, packet.buf.end());
+    //std::cout << "temp_vec.size(): " << temp_vec.size() << std::endl;
     switch (packet.buf[device_byte]) {
         case ZISTERNENSENSOR:
             rx_cist = cistern_parser(temp_vec);
@@ -495,6 +497,12 @@ void message_parser(rx_data& packet) {
             publish_data(rx_cist);
             break;
         case FENSTERSENSOR:
+            break;
+        case WETTERSTATION:
+            rx_weather = weather_station_parser(temp_vec);
+            rx_weather.rssi = packet.RSSI;
+            rx_weather.version = packet.buf[device_version];
+            publish_data(rx_weather);
             break;
         default:
             return;
@@ -518,24 +526,29 @@ cistern_data cistern_parser(std::vector<uint8_t> &data) {
                 break;
             case payload_type::battery_voltage:
                 if (pos + battery_voltage_handle.length <= data.size()) {
+
+                    z_data.battery_voltage = parse_float(data, pos);
+                    /*
                     uint8_t byte_set[4];
                     byte_set[0] = data[pos + 1];
                     byte_set[1] = data[pos + 2];
                     byte_set[2] = data[pos + 3];
                     byte_set[3] = data[pos + 4];
                     //std::cout << "Float: " << static_cast<uint32_t>(byte_set[0]) << ", " << static_cast<uint32_t>(byte_set[1]) << ", " << static_cast<uint32_t>(byte_set[2]) << ", " << static_cast<uint32_t>(byte_set[3]) << std::endl;
-                    z_data.battery_voltage = *reinterpret_cast<float*>(byte_set);
+                    z_data.battery_voltage = *reinterpret_cast<float*>(byte_set);*/
                 }
                 pos += battery_voltage_handle.length + 1;
                 break;
             case payload_type::distance:
                 if (pos + distance_handle.length <= data.size()) {
+                    z_data.distance = parse_int32_t(data, pos);
+                    /*
                     uint8_t byte_set[4];
                     byte_set[0] = data[pos + 1];
                     byte_set[1] = data[pos + 2];
                     byte_set[2] = data[pos + 3];
                     byte_set[3] = data[pos + 4];
-                    z_data.distance = *reinterpret_cast<int32_t*>(byte_set);
+                    z_data.distance = *reinterpret_cast<int32_t*>(byte_set);*/
                 }
                 pos += distance_handle.length + 1;
                 break;
@@ -545,6 +558,153 @@ cistern_data cistern_parser(std::vector<uint8_t> &data) {
         }
     }
     return z_data;
+}
+
+weather_station_data weather_station_parser(std::vector<uint8_t> &data) {
+    printf("data weather station: %s\n", std::string(data.begin(), data.end()).c_str());
+    std::cout << "data.size(): " << data.size() << std::endl;
+    weather_station_data w_data;
+    size_t pos = 0;
+    while (data.size() > pos) {
+        switch (data[pos]) {
+            case payload_type::mac:
+                printf("mac triggered\n");
+                if (pos + mac_handle.length <= data.size()) {
+                    for (int i = 0; i < mac_handle.length; ++i) {
+                        w_data.mac[i] = data[i + pos + 1];
+                    }
+                }
+                pos += mac_handle.length + 1;
+                break;
+            case payload_type::battery_voltage:
+                printf("battery_voltage triggered\n");
+                if (pos + battery_voltage_handle.length <= data.size()) {
+                    w_data.battery_voltage = parse_float(data, pos);
+                }
+                pos += battery_voltage_handle.length + 1;
+                break;
+            case payload_type::temperature:
+                printf("temperature triggered\n");
+                if (pos + temperature_handle.length <= data.size()) {
+                    w_data.temperature = parse_float(data, pos);
+                }
+                pos += temperature_handle.length + 1;
+                break;
+            case payload_type::humidity:
+                printf("humidity triggered\n");
+                if (pos + humidity_handle.length <= data.size()) {
+                    w_data.humidity = parse_float(data, pos);
+                }
+                pos += humidity_handle.length + 1;
+                break;
+            case payload_type::pressure:
+                printf("pressure triggered\n");
+                if (pos + pressure_handle.length <= data.size()) {
+                    w_data.pressure = parse_float(data, pos);
+                }
+                pos += pressure_handle.length + 1;
+                break;
+            case payload_type::light:
+                printf("light triggered\n");
+                if (pos + light_handle.length <= data.size()) {
+                    w_data.light = parse_float(data, pos);
+                }
+                pos += light_handle.length + 1;
+                break;
+            case payload_type::co2_concentration:
+                printf("co2_concentration triggered\n");
+                if (pos + co2_concentration_handle.length <= data.size()) {
+                    w_data.co2_concentration = parse_uint16_t(data, pos);
+                }
+                pos += co2_concentration_handle.length + 1;
+                break;
+            default:
+                printf("default triggered\n");
+                pos = data.size();
+                break;
+        }
+    }
+    return w_data;
+}
+
+uint16_t parse_uint16_t(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[2];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    return  *reinterpret_cast<uint16_t*>(byte_set);
+}
+
+uint32_t parse_uint32_t(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[4];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    byte_set[2] = raw_data[start_id + 3];
+    byte_set[3] = raw_data[start_id + 4];
+    return  *reinterpret_cast<uint32_t*>(byte_set);
+}
+
+uint64_t parse_uint64_t(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[8];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    byte_set[2] = raw_data[start_id + 3];
+    byte_set[3] = raw_data[start_id + 4];
+    byte_set[4] = raw_data[start_id + 5];
+    byte_set[5] = raw_data[start_id + 6];
+    byte_set[6] = raw_data[start_id + 7];
+    byte_set[7] = raw_data[start_id + 8];
+    return  *reinterpret_cast<uint64_t*>(byte_set);
+}
+
+int16_t parse_int16_t(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[2];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    return  *reinterpret_cast<int16_t*>(byte_set);
+}
+
+int32_t parse_int32_t(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[4];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    byte_set[2] = raw_data[start_id + 3];
+    byte_set[3] = raw_data[start_id + 4];
+    return  *reinterpret_cast<int32_t*>(byte_set);
+}
+
+int64_t parse_int64_t(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[8];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    byte_set[2] = raw_data[start_id + 3];
+    byte_set[3] = raw_data[start_id + 4];
+    byte_set[4] = raw_data[start_id + 5];
+    byte_set[5] = raw_data[start_id + 6];
+    byte_set[6] = raw_data[start_id + 7];
+    byte_set[7] = raw_data[start_id + 8];
+    return  *reinterpret_cast<int64_t*>(byte_set);
+}
+
+float parse_float(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[4];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    byte_set[2] = raw_data[start_id + 3];
+    byte_set[3] = raw_data[start_id + 4];
+    return  *reinterpret_cast<float*>(byte_set);
+}
+
+double parse_double(std::vector<uint8_t> &raw_data, uint32_t start_id) {
+    uint8_t byte_set[8];
+    byte_set[0] = raw_data[start_id + 1];
+    byte_set[1] = raw_data[start_id + 2];
+    byte_set[2] = raw_data[start_id + 3];
+    byte_set[3] = raw_data[start_id + 4];
+    byte_set[4] = raw_data[start_id + 5];
+    byte_set[5] = raw_data[start_id + 6];
+    byte_set[6] = raw_data[start_id + 7];
+    byte_set[7] = raw_data[start_id + 8];
+    return  *reinterpret_cast<double*>(byte_set);
 }
 
 /*
@@ -585,6 +745,57 @@ void publish_data(cistern_data &rx_data) {
 
         pubmsg = mqtt::make_message(topic + ("rssi"), std::to_string(rx_data.rssi));
         //std::cout << "rssi: " << rx_data.rssi << std::endl <<std::endl;
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+    } catch (const mqtt::exception& exc) {
+        std::cerr << "Error: " << exc.what() << std::endl;
+    }
+}
+
+void publish_data(weather_station_data &rx_data) {
+    //printf("publish" );
+    if (lookup_mac(rx_data.mac).empty()) {
+        add_discovered_mac(rx_data.mac, WETTERSTATION, rx_data.version);
+        return;
+    }
+    if (!mqtt_client_->is_connected()) {
+        return;
+    }
+
+    const int TIMEOUT = 1000; // Milliseconds
+    try {
+        // Publish the message
+        std::string topic = "lora2mqtt/weather_station/";
+        topic.append(lookup_mac(rx_data.mac));
+        topic.append("/");
+
+
+        mqtt::message_ptr pubmsg = mqtt::make_message(topic + ("temperature"), std::to_string(rx_data.temperature));
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+        pubmsg = mqtt::make_message(topic + ("humidity"), std::to_string(rx_data.humidity));
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+        pubmsg = mqtt::make_message(topic + ("pressure"), std::to_string(rx_data.pressure));
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+        pubmsg = mqtt::make_message(topic + ("light"), std::to_string(rx_data.light));
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+        pubmsg = mqtt::make_message(topic + ("co2_concentration"), std::to_string(rx_data.co2_concentration));
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+        pubmsg = mqtt::make_message(topic + ("battery_voltage"), std::to_string(rx_data.battery_voltage));
+        pubmsg->set_qos(1);
+        mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
+
+        pubmsg = mqtt::make_message(topic + ("rssi"), std::to_string(rx_data.rssi));
         pubmsg->set_qos(1);
         mqtt_client_->publish(pubmsg)->wait_for(TIMEOUT);
 

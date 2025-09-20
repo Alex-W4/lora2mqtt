@@ -27,7 +27,8 @@ MESSAGE_TYPE = {
 }
 
 DEVICE_TYPE = {
-    CISTERN: "Z"
+    CISTERN: "Z",
+    WEATHER_STATION: "W"
 }
 
 

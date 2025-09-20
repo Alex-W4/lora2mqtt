@@ -34,9 +34,19 @@ napi_value Init(napi_env env, napi_value exports);
 
 void message_parser(rx_data& packet);
 cistern_data cistern_parser(std::vector<uint8_t> &data);
+weather_station_data weather_station_parser(std::vector<uint8_t> &data);
+uint16_t parse_uint16_t(std::vector<uint8_t> &raw_data, uint32_t start_id);
+uint32_t parse_uint32_t(std::vector<uint8_t> &raw_data, uint32_t start_id);
+uint64_t parse_uint64_t(std::vector<uint8_t> &raw_data, uint32_t start_id);
+int16_t parse_int16_t(std::vector<uint8_t> &raw_data, uint32_t start_id);
+int32_t parse_int32_t(std::vector<uint8_t> &raw_data, uint32_t start_id);
+int64_t parse_int64_t(std::vector<uint8_t> &raw_data, uint32_t start_id);
+float parse_float(std::vector<uint8_t> &raw_data, uint32_t start_id);
+double parse_double(std::vector<uint8_t> &raw_data, uint32_t start_id);
 
 void publish_message(const std::string& topic, const std::string& payload);
 void publish_data(cistern_data &rx_data);
+void publish_data(weather_station_data &rx_data);
 
 std::string mac_to_string(std::array<uint8_t, MAC_LENGTH> mac);
 void string_to_mac(std::string mac_string, std::array<uint8_t, MAC_LENGTH> &mac);
