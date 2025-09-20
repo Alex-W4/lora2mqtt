@@ -3,6 +3,11 @@ Intigrate and configure LoRa Devices. Currently, this Project contains a backend
 on a specific custom Module. Together with a simple but functional web frontend this project provides a complete
 configutaion suite for compatible devices.
 
+## Update and Reinstallation
+For update and reinstallation save your mosquitto config in `/etc/mosquitto/conf.d/lora2mqtt` and your lora2mqtt config in `/etc/lora2mqtt/config.json`
+to a save place, remove the source directory of lora2mqtt and clone and install the git repo described in the paragraph Installation.
+After the installation the configs can be replaced and after a reboot everything should work again.
+
 ## Installation
 This software is meant to run on a Raspberry Pi 3 or newer with GPIO extention pins. The LoRa receiver module must
 be attached in the shown orientation and position. Please power down the pi when attaching or detaching the module 

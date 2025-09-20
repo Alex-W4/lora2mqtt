@@ -21,7 +21,7 @@ PATH_=$(pwd)"/web"
 /usr/sbin/update-rc.d lora2mqtt defaults
 
 /bin/touch /etc/mosquitto/conf.d/lora2mqtt.conf
-echo "allow_anonymous true" >> /etc/mosquitto/conf.d/lora2mqtt.conf
+echo "allow_anonymous true" > /etc/mosquitto/conf.d/lora2mqtt.conf
 echo "listener 1883" >> /etc/mosquitto/conf.d/lora2mqtt.conf
 
 echo ""
